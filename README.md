@@ -22,7 +22,7 @@ Alih-alih mengandalkan satu model LLM besar yang lambat dan mahal untuk memprose
 
 Berikut adalah cetak biru (*blueprint*) dari seluruh jalur pipa data (*data pipeline*) dan arsitektur logika yang dirancang di dalam kanvas n8n:
 
-![n8n Architecture Blueprint](assets/n8n_blueprint.jpeg)
+![n8n Architecture Blueprint](asset/n8n_blueprint.jpeg)
 
 ---
 
@@ -30,7 +30,7 @@ Berikut adalah cetak biru (*blueprint*) dari seluruh jalur pipa data (*data pipe
 
 Sistem ini telah diuji secara langsung dan terbukti mampu melakukan pemrosesan bahasa alami (NLP) untuk mengekstrak entitas waktu, kalkulasi finansial, hingga melakukan sintesis data pasar eksternal:
 
-![Telegram Interface Execution](assets/telegram_execution.jpeg)
+![Telegram Interface Execution](asset/telegram_execution.jpeg)
 
 ---
 
