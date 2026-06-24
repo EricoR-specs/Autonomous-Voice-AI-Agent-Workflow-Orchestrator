@@ -1,0 +1,4041 @@
+{
+  "name": "N8n Rico Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        112
+      ],
+      "id": "9eda2bab-b516-416b-8585-1bab24aaf60c",
+      "name": "Telegram Trigger",
+      "webhookId": "e4c21412-6e56-4a6f-96f7-8e2da60d5c66",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e009fb60-e726-4340-a8a0-9ba8b230bffe",
+              "leftValue": "={{ $json.message.voice }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        112
+      ],
+      "id": "bf36fffb-ba05-4eda-b3e2-fba22745bdac",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        -144
+      ],
+      "id": "5cabdf81-528c-429f-b49c-3001f68259a3",
+      "name": "Get a file",
+      "webhookId": "867d0a1c-8f48-4194-8fee-3ff2d38cb11a",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileInput": "data"
+      },
+      "type": "n8n-nodes-assemblyai.assemblyAi",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -144
+      ],
+      "id": "80017264-3c3a-495e-bcc7-71c19b048a5a",
+      "name": "Upload a file",
+      "credentials": {
+        "assemblyAiApi": {
+          "id": "F5dIKEddLG3eKxW7",
+          "name": "AssemblyAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "audioUrl": "={{ $json.upload_url }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-assemblyai.assemblyAi",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -144
+      ],
+      "id": "57e2b8c0-06c0-4015-b362-0d796ed24648",
+      "name": "Create a transcription",
+      "credentials": {
+        "assemblyAiApi": {
+          "id": "F5dIKEddLG3eKxW7",
+          "name": "AssemblyAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        -144
+      ],
+      "id": "1788feb5-fd99-4cb6-8f92-8cce24965a93",
+      "name": "Wait",
+      "webhookId": "fc868507-0f1d-4a53-9e10-df214387f04f"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "transcriptId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-assemblyai.assemblyAi",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -144
+      ],
+      "id": "8d4f7d86-4097-41a8-9977-567133d3e256",
+      "name": "Get a transcription",
+      "credentials": {
+        "assemblyAiApi": {
+          "id": "F5dIKEddLG3eKxW7",
+          "name": "AssemblyAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=[SISTEM/INSTRUKSI]\nKamu adalah Rico, otak pengklasifikasi intensi untuk Personal Assistant. Tugasmu adalah mengategorikan teks input user ke dalam SATU label saja.\n\n[DAFTAR LABEL]\n1. CATATAN : Ide, pemikiran, memo acak, catatan umum. (PENTING: Jika input mengandung kata 'catat', 'mencatat', atau 'catatan', WAJIB pilih label ini).\n2. JADWAL  : Pengingat waktu, janji temu, atau agenda yang terikat waktu/tanggal spesifik.\n3. TODO    : Daftar tugas, action item, atau pekerjaan yang harus diselesaikan (tidak terikat waktu, butuh tindakan).\n4. RISET : Permintaan riset topik, belajar hal baru, atau pembuatan skrip riset.\n5. KEUANGAN: Transaksi uang, pengeluaran, pemasukan, pembelian, atau transfer.\n\n[CONTOH KLASIFIKASI]\nInput: Beliin token listrik 50rb\nOutput: KEUANGAN\n\nInput: Meeting dengan klien jam 3 sore\nOutput: JADWAL\n\nInput: Cari tahu cara setting alur keuangan di N8N\nOutput: TODO\n\nInput: Ingatkan aku untuk beli susu\nOutput: TODO\n\nInput: Catat ide ide buat bisnis baru\nOutput: CATATAN\n\nInput: Catat belanjaan hari ini\nOutput: CATATAN\n\nInput: Riset topik AI untuk episode minggu depan\nOutput: PODCAST\n\n[ATURAN MUTLAK]\n- Jawab HANYA dengan satu kata label di atas (misal: TODO).\n- Jangan berikan tanda baca, penjelasan, atau basa-basi.\n- Jawab dengan huruf kapital semua.\n\n[INPUT USER]\n{{ $json.text }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1504,
+        -400
+      ],
+      "id": "d8afbcbc-9950-4586-b4f3-637b6e14c175",
+      "name": "Basic LLM Chain",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        -176
+      ],
+      "id": "c50acd8c-5965-482a-aa09-c299a2cdc347",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "vXOuXKS68ekhetFa",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=[SISTEM/INSTRUKSI]\nKamu adalah Rico, otak pengklasifikasi intensi untuk Personal Assistant. Tugasmu adalah mengategorikan teks input user ke dalam SATU label saja.\n\n[DAFTAR LABEL]\n1. CATATAN : Ide, pemikiran, memo acak, catatan umum. (PENTING: Jika input mengandung kata 'catat', 'mencatat', atau 'catatan', WAJIB pilih label ini).\n2. JADWAL  : Pengingat waktu, janji temu, atau agenda yang terikat waktu/tanggal spesifik.\n3. TODO    : Daftar tugas, action item, atau pekerjaan yang harus diselesaikan (tidak terikat waktu, butuh tindakan).\n4. RISET : Permintaan riset topik, belajar hal baru, atau pembuatan skrip riset.\n5. KEUANGAN: Transaksi uang, pengeluaran, pemasukan, pembelian, atau transfer.\n\n[CONTOH KLASIFIKASI]\nInput: Beliin token listrik 50rb\nOutput: KEUANGAN\n\nInput: Meeting dengan klien jam 3 sore\nOutput: JADWAL\n\nInput: Cari tahu cara setting alur keuangan di N8N\nOutput: TODO\n\nInput: Ingatkan aku untuk beli susu\nOutput: TODO\n\nInput: Catat ide ide buat bisnis baru\nOutput: CATATAN\n\nInput: Catat belanjaan hari ini\nOutput: CATATAN\n\nInput: Riset topik AI untuk episode minggu depan\nOutput: PODCAST\n\n[ATURAN MUTLAK]\n- Jawab HANYA dengan satu kata label di atas (misal: TODO).\n- Jangan berikan tanda baca, penjelasan, atau basa-basi.\n- Jawab dengan huruf kapital semua.\n\n[INPUT USER]\n{{ $json.message.text }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        256,
+        208
+      ],
+      "id": "bb7076f4-76ff-4327-93b2-b40ce2fc8357",
+      "name": "Basic LLM Chain1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "groq/compound-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        336,
+        432
+      ],
+      "id": "ee3a1bc9-5431-4341-aebd-6660b211e74b",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "vXOuXKS68ekhetFa",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.date }}",
+            "Raw Text": "={{ $json.text }}",
+            "Predicted Intent": "={{ $json.intent }}",
+            "Status (Success/Failed)": "={{ $json.proses }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2592,
+        192
+      ],
+      "id": "d85d512a-e670-4c85-b44e-e095efe67304",
+      "name": "Logging Awal",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['Predicted Intent'] }}",
+                    "rightValue": "CATATAN",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9fae5a64-17c8-49cc-9bd9-88710162a7d1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Catatan"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "53621388-f981-467f-bfe9-475ff2e919c2",
+                    "leftValue": "={{ $json['Predicted Intent'] }}",
+                    "rightValue": "JADWAL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Jadwal"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cf9cfba3-b1ef-45a9-90bf-0786881ce3b0",
+                    "leftValue": "={{ $json['Predicted Intent'] }}",
+                    "rightValue": "RISET",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "RISET"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2fb74506-b855-41bc-bec7-36a170c3d31b",
+                    "leftValue": "={{ $json['Predicted Intent'] }}",
+                    "rightValue": "KEUANGAN",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Keuangan"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f4825876-ae0a-4f32-bce2-8eae1fb919e4",
+                    "leftValue": "={{ $json['Predicted Intent'] }}",
+                    "rightValue": "TODO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "To Do"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2752,
+        144
+      ],
+      "id": "0948ee2b-cbb0-474d-b75b-4c5ea3ee5870",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Kamu adalah asisten pengelola catatan pribadi. Tugasmu adalah menganalisis input teks mentah dan mengonversinya menjadi objek JSON yang terstruktur.\n\nInput yang diberikan adalah: {{ $json['Raw Text'] }} , dan {{ $json.Timestamp }}\n\nEkstraksi data menjadi format berikut:\n{\n  \"judul\": \"Buatkan judul singkat (maksimal 5 kata) yang mencerminkan inti catatan\",\n  \"kategori\": \"Pilih satu kategori yang paling relevan: [Ide Proyek, Pembelajaran, Kehidupan, Pekerjaan, Lainnya]\",\n  \"rangkuman\": \"Buat rangkuman padat dan jelas dari teks asli (maksimal 3 kalimat)\"\n  \"Tanggal \" : {{ $json.Timestamp }} ,\n  \" Predicted Intent\" : {{ $json['Predicted Intent'] }} ,\n   \"Raw text\" : {{ $json['Raw Text'] }}\n}\n\nAturan Mutlak:\n1. Keluarkan HANYA string JSON murni.\n2. Jangan berikan teks pembuka, penjelasan, atau tanda markdown ```json.\n3. Pastikan bahasa yang digunakan sesuai dengan bahasa input teks asli.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "="
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2976,
+        -720
+      ],
+      "id": "2515298f-f3a5-408c-945f-fa60644dba97",
+      "name": "Basic LLM Chain2",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "groq/compound-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3056,
+        -496
+      ],
+      "id": "4296f886-8862-45c6-9b48-afb317e56812",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "vXOuXKS68ekhetFa",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2288,
+        -208
+      ],
+      "id": "083bc0a7-eb90-4200-b7da-1f410985a3ba",
+      "name": "Merge from Voice Note",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1040,
+        432
+      ],
+      "id": "8eb9fedd-a595-43ae-80d6-bee53e885f5a",
+      "name": "Merge from Message"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "muh.ericoricardo@gmail.com",
+          "mode": "list",
+          "cachedResultName": "muh.ericoricardo@gmail.com"
+        },
+        "start": "={{ $json.start_time }}",
+        "end": "={{ $json.end_time }}",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "description": "={{ $json.description }}",
+          "summary": "={{ $json.title }}"
+        },
+        "remindersUi": {
+          "remindersValues": [
+            {
+              "method": "popup",
+              "minutes": 1440
+            },
+            {
+              "method": "popup",
+              "minutes": 2880
+            },
+            {
+              "method": "popup",
+              "minutes": 4320
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        3552,
+        -320
+      ],
+      "id": "8c2e8721-6578-4097-88aa-476f911c2d2b",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "5OhXVZQxhSY6tnN5",
+          "name": "Google Calendar account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "groq/compound-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3056,
+        -96
+      ],
+      "id": "9f3264af-bc7b-4f8c-909a-2da2ec7818a5",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "vXOuXKS68ekhetFa",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Kamu adalah asisten ekstraksi jadwal pribadi. Tugasmu adalah mengubah input teks menjadi JSON yang terstruktur.\n\nTanggal hari ini adalah: {{ $now.format('yyyy-MM-dd') }}\n berikut input : {{ $json['Raw Text'] }}\nJika input menyebutkan hari (contoh: \"besok\", \"hari senin\"), konversikan ke tanggal yang tepat berdasarkan tanggal hari ini.\n\nKeluarkan output dalam format JSON berikut:\n{\n  \"nama_acara\": \"Nama singkat acara\",\n  \"tanggal_acara\": \"YYYY-MM-DD\",\n  \"jam_mulai\": \"HH:mm\",\n  \"jam_selesai\": \"HH:mm (jika tidak ada, beri nilai null)\",\n  \"predicted_intent\": \"JADWAL\" ,\n  \" Raw Text\" : {{ $json['Raw Text'] }}\n}\n\nAturan:\n1. Jangan berikan teks pembuka atau penutup.\n2. Gunakan null jika data tidak ditemukan.\n3. Output harus berupa JSON murni.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2976,
+        -320
+      ],
+      "id": "483126c8-2a25-4648-b400-47a399937a49",
+      "name": "Basic LLM Chain3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f765f887-560d-43f9-9a3e-c0e955f86668",
+              "name": "final_Intent",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        208
+      ],
+      "id": "fbcd0095-6283-4c28-a2b4-de6d1909ad77",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ee0048b-5907-4a7f-ba7a-f81cd43c3eb8",
+              "name": "final_raw_text",
+              "value": "={{ $json.text_js }}",
+              "type": "string"
+            },
+            {
+              "id": "59d56935-e978-4548-8079-652efe44bafc",
+              "name": "final_date",
+              "value": "={{ $json.date }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        640
+      ],
+      "id": "0f8c9a22-d1f0-4903-9d87-066a65332913",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68b0999e-752f-4931-9a47-738a0b7061fd",
+              "name": "final_Intent",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1856,
+        -416
+      ],
+      "id": "da4d2943-69db-4dcb-ac1e-00f5b0a72a15",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b8f66bb4-72ca-42a8-abea-5c3664709b4a",
+              "name": "final_raw_text",
+              "value": "={{ $json.text_js }}",
+              "type": "string"
+            },
+            {
+              "id": "0a5e9f47-1484-4a84-937e-43f6a6ad0e39",
+              "name": "final_date",
+              "value": "={{ $json.date }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1856,
+        48
+      ],
+      "id": "5c50211e-b6a0-41db-85d5-64a01f9ab8bb",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1268107623,
+          "mode": "list",
+          "cachedResultName": "Catatan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=1268107623"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tanggal": "={{ $json.tanggal }}",
+            "Kategori": "={{ $json.kategori }}",
+            "Judul Ide": "={{ $json.judul }}",
+            "Rangkuman Ide/Isi": "={{ $json.rangkuman }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Judul Ide",
+              "displayName": "Judul Ide",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rangkuman Ide/Isi",
+              "displayName": "Rangkuman Ide/Isi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3552,
+        -768
+      ],
+      "id": "72642803-941e-419e-9d04-a3884f790f1d",
+      "name": "Catat Catatan",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status (Success/Failed)": "={{ $json.error }}",
+            "Raw Text": "={{ $json.description }}",
+            "Timestamp": "={{ $json.tanggal_sekarang }}",
+            "Predicted Intent": "={{ $json.intent }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3776,
+        -160
+      ],
+      "id": "cd235e2c-27c6-4ec5-88c9-599d8554da7f",
+      "name": "Catat Log Jadwal",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.tanggal }}",
+            "Raw Text": "={{ $json.raw_text }}",
+            "Predicted Intent": "={{ $json.intent }}",
+            "Status (Success/Failed)": "={{ $json.process }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3696,
+        -608
+      ],
+      "id": "be2add4b-4127-43ec-bbdb-ea52f191517a",
+      "name": "Catat Log Catatan",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "task": "MDA1MjQ0NTQ4NjAyOTM2NzU0NDM6MDow",
+        "title": "={{ $json['Raw Text'] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        2912,
+        1360
+      ],
+      "id": "afd096d5-36cb-4343-ad27-c512082c2533",
+      "name": "Create a task",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "Z633bn9nuQkv7qzb",
+          "name": "Google Tasks account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=[SISTEM/INSTRUKSI]\nAnda adalah asisten keuangan pribadi bernama Rico. Tugas Anda adalah menganalisis input user dan mengubahnya menjadi format JSON yang presisi.\n\n[LOGIKA KATEGORI]\nGunakan kategori berikut untuk memastikan data tetap rapi:\n- TRANSPORTASI : Bensin, parkir, ojek online, tol, servis motor/mobil.\n- MAKANAN      : Seblak, makan siang, jajan, kopi, snack, restoran.\n- KEBUTUHAN    : Listrik, air, pulsa, paket data, sewa, kebutuhan rumah tangga.\n- HIBURAN      : Nonton, game, langganan aplikasi, tiket konser.\n- INVESTASI    : Saham, crypto, emas, tabungan.\n- KESEHATAN    : Dokter, obat, vitamin, gym.\n- LAIN-LAIN    : Belanja mendadak atau hal yang tidak masuk kategori di atas.\n\n[ATURAN OUTPUT]\n1. action: Tentukan apakah user ingin \"RECORD\" (catat transaksi), \"CHECK_SALDO\" (cek saldo), atau \"PRINT_REPORT\" (minta laporan).\n2. jenis: Tentukan \"Pemasukan\" atau \"Pengeluaran\".\n3. nominal: Ambil angka murni (tanpa huruf, tanpa titik/koma). Jika input 7.5jt, tulis 7500000.\n4. kategori: Pilih dari daftar di atas yang paling mendekati. Jika tidak ada, buat kategori singkat yang relevan.\n5. catatan: Tuliskan teks asli dari user (raw input) agar keterangan tetap detail.\n\nFormat output WAJIB JSON:\n{\n  \"action\": \"RECORD\" | \"CHECK_SALDO\" | \"PRINT_REPORT\",\n  \"jenis\": \"Pemasukan\" | \"Pengeluaran\",\n  \"nominal\": number,\n  \"kategori\": \"TRANSPORTASI\" | \"MAKANAN\" | \"KEBUTUHAN\" | \"HIBURAN\" | \"INVESTASI\" | \"KESEHATAN\" | \"LAIN-LAIN\",\n  \"catatan\": \"string\"\n}\n\n[INPUT USER]\n{{ $json['Raw Text'] }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2960,
+        848
+      ],
+      "id": "8b42ad8d-1a5f-4ddf-ad09-785130880715",
+      "name": "Basic LLM Chain4",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "groq/compound-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        1072
+      ],
+      "id": "c0d7e479-b8c1-49ea-9f2e-b7e30945f80c",
+      "name": "Groq Chat Model4",
+      "credentials": {
+        "groqApi": {
+          "id": "vXOuXKS68ekhetFa",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "RECORD",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6b983f57-b7d0-413e-a591-38ded07f9307"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Catat"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cb83c7a2-9b13-479d-80ce-d9e8215ebbe9",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "CHECK_SALDO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cek Saldo"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bf3758ce-6ca0-44ac-bc79-dffb16366901",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "PRINT_REPORT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Print Laporan"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        3536,
+        720
+      ],
+      "id": "cc3732f5-031f-486c-aa54-5fa23d8c8f13",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 124642291,
+          "mode": "list",
+          "cachedResultName": "Keuangan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=124642291"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Bulan-Tahun",
+              "lookupValue": "={{ $json['Bulan-Tahun'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4000,
+        464
+      ],
+      "id": "b96330b6-bc76-48df-aea8-df96931b30d7",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua baris data dari Google Sheets yang lolos filter bulan ini\nconst rows = $input.all();\n\nlet totalPemasukan = 0;\nlet totalPengeluaran = 0;\n\n// Looping untuk menjumlahkan masing-masing jenis transaksi\nfor (const row of rows) {\n  const jenis = row.json['Jenis (Pemasukan/Pengeluaran)'];\n  const nominal = parseFloat(row.json.Nominal) || 0;\n  \n  if (jenis === 'Pemasukan') {\n    totalPemasukan += nominal;\n  } else if (jenis === 'Pengeluaran') {\n    totalPengeluaran += nominal;\n  }\n}\n\nconst sisaSaldo = totalPemasukan - totalPengeluaran;\n\n// Mengirimkan hasil kalkulasi ke node berikutnya (Telegram)\nreturn {\n  json: {\n    total_pemasukan: totalPemasukan,\n    total_pengeluaran: totalPengeluaran,\n    sisa_saldo: sisaSaldo,\n    Process: \"Finish\"\n    \n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4224,
+        464
+      ],
+      "id": "11361821-3df6-4265-9e06-4ad91a9d541b",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8f47be0-bdd2-467e-94b1-fc267ff9f532",
+              "leftValue": "={{ $json.sisa_saldo }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "e01d3a8c-ac1d-4c7f-ace0-f00ef30fd6dc",
+              "leftValue": "={{ $json.sisa_saldo }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4448,
+        464
+      ],
+      "id": "3ef718b1-d75e-4881-adeb-0881e6f46d6a",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 124642291,
+          "mode": "list",
+          "cachedResultName": "Keuangan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=124642291"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Bulan-Tahun",
+              "lookupValue": "={{ $json['Bulan-Tahun'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3760,
+        736
+      ],
+      "id": "2c31b2d4-ec2d-48bc-9d65-c705709a8640",
+      "name": "Get row(s) in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua baris data dari Google Sheets yang lolos filter bulan ini\nconst rows = $input.all();\n\nlet totalPemasukan = 0;\nlet totalPengeluaran = 0;\n\n// Looping untuk menjumlahkan masing-masing jenis transaksi\nfor (const row of rows) {\n  const jenis = row.json['Jenis (Pemasukan/Pengeluaran)'];\n  const nominal = parseFloat(row.json.Nominal) || 0;\n  \n  if (jenis === 'Pemasukan') {\n    totalPemasukan += nominal;\n  } else if (jenis === 'Pengeluaran') {\n    totalPengeluaran += nominal;\n  }\n}\n\nconst sisaSaldo = totalPemasukan - totalPengeluaran;\n\n// Mengirimkan hasil kalkulasi ke node berikutnya (Telegram)\nreturn {\n  json: {\n    total_pemasukan: totalPemasukan,\n    total_pengeluaran: totalPengeluaran,\n    sisa_saldo: sisaSaldo,\n    Process: \"Finish\"\n    \n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3984,
+        736
+      ],
+      "id": "6f659360-4fdf-4181-a479-737523410525",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8f47be0-bdd2-467e-94b1-fc267ff9f532",
+              "leftValue": "={{ $json.sisa_saldo }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "e01d3a8c-ac1d-4c7f-ace0-f00ef30fd6dc",
+              "leftValue": "={{ $json.sisa_saldo }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4208,
+        736
+      ],
+      "id": "0b74bf57-b74b-4030-b806-e76187ddd8e0",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 124642291,
+          "mode": "list",
+          "cachedResultName": "Keuangan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=124642291"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Bulan-Tahun",
+              "lookupValue": "={{ $json['Bulan-Tahun'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3760,
+        1024
+      ],
+      "id": "e17fa076-783b-475d-b198-d218efcbc68a",
+      "name": "Get row(s) in sheet4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Ambil semua data baris dari Google Sheets yang lolos filter\nconst rows = $input.all();\n\nlet tableRowsHTML = '';\nlet totalPemasukan = 0;\nlet totalPengeluaran = 0;\n\n// 2. Lakukan looping untuk menyusun baris tabel\nfor (const row of rows) {\n  const data = row.json;\n  \n  // Menggunakan bracket notation agar sesuai dengan nama kolom asli Google Sheets\n  const tanggal = data['Tanggal'] || '-';\n  const jenis = data['Jenis (Pemasukan/Pengeluaran)'] || data['Jenis'] || '-';\n  const nominal = parseFloat(data['Nominal']) || 0;\n  const kategori = data['Kategori'] || '-';\n  const catatan = data['Catatan/Keterangan'] || data['Catatan'] || '-';\n  \n  if (jenis === 'Pemasukan') {\n    totalPemasukan += nominal;\n  } else if (jenis === 'Pengeluaran') {\n    totalPengeluaran += nominal;\n  }\n\n  // Menyusun baris demi baris ke dalam tag HTML\n  tableRowsHTML += `\n    <tr>\n      <td>${tanggal}</td>\n      <td class=\"${jenis === 'Pemasukan' ? 'text-green' : 'text-red'}\">${jenis}</td>\n      <td>Rp ${nominal.toLocaleString('id-ID')}</td>\n      <td>${kategori}</td>\n      <td>${catatan}</td>\n    </tr>\n  `;\n}\n\nconst sisaSaldo = totalPemasukan - totalPengeluaran;\nconst targetBulan = rows[0]?.json[\"Bulan-Tahun\"] || \"Bulan Ini\";\n\n// 3. Masukkan ke dalam template HTML utuh dengan styling CSS\nconst fullHTML = `\n<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; margin: 30px; color: #333; }\n    h2 { text-align: center; color: #2c3e50; margin-bottom: 5px; }\n    p.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; }\n    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }\n    th, td { border: 1px solid #bdc3c7; padding: 10px; text-align: left; }\n    th { background-color: #f2f2f2; color: #2c3e50; }\n    .text-green { color: #27ae60; font-weight: bold; }\n    .text-red { color: #c0392b; font-weight: bold; }\n    .summary-box { background-color: #f9f9f9; padding: 15px; border: 1px solid #e2e8f0; border-radius: 5px; margin-top: 20px; }\n    .summary-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 16px; }\n    .total-saldo { font-size: 18px; font-weight: bold; border-top: 2px solid #2c3e50; padding-top: 8px; margin-top: 8px; }\n  </style>\n</head>\n<body>\n\n  <h2>LAPORAN KEUANGAN PERSONAL RICO</h2>\n  <p class=\"subtitle\">Periode Bulan-Tahun: ${targetBulan}</p>\n\n  <table>\n    <thead>\n      <tr>\n        <th>Tanggal</th>\n        <th>Jenis</th>\n        <th>Nominal</th>\n        <th>Kategori</th>\n        <th>Catatan/Keterangan</th>\n      </tr>\n    </thead>\n    <tbody>\n      ${tableRowsHTML}\n    </tbody>\n  </table>\n\n  <div class=\"summary-box\">\n    <div class=\"summary-item\">\n      <span>Total Pemasukan:</span>\n      <span class=\"text-green\">Rp ${totalPemasukan.toLocaleString('id-ID')}</span>\n    </div>\n    <div class=\"summary-item\">\n      <span>Total Pengeluaran:</span>\n      <span class=\"text-red\">Rp ${totalPengeluaran.toLocaleString('id-ID')}</span>\n    </div>\n    <div class=\"summary-item total-saldo\">\n      <span>Sisa Saldo Bersih:</span>\n      <span>Rp ${sisaSaldo.toLocaleString('id-ID')}</span>\n    </div>\n  </div>\n\n</body>\n</html>\n`;\n\nreturn {\n  json: {\n    htmlContent: fullHTML,\n    fileName: `Laporan_Keuangan_${targetBulan}.pdf`,\n    process : \"Finish\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3984,
+        1024
+      ],
+      "id": "0c2e2f83-40c0-4003-9f5b-f00633b6b9e5",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "resource": "pdfCreation",
+        "operation": "htmlToPdf"
+      },
+      "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
+      "typeVersion": 1,
+      "position": [
+        4208,
+        1024
+      ],
+      "id": "386a3a96-3137-4a03-9fb4-5230ec1ddbe5",
+      "name": "Convert HTML to PDF",
+      "credentials": {
+        "htmlcsstopdfApi": {
+          "id": "Pvzx2ulQ9HyRrcQe",
+          "name": "HTML to PDF account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# ROLE & PERSONALITY\nYou are an elite, highly analytical Business Analyst and Data Automation Expert. Your communication style is sharp, direct, candid, and peer-like. You completely avoid corporate fluff, generic definitions, and long academic introductions. You deliver deep insights with extreme brevity and structural clarity.\n\n# OBJECTIVE\nAnalyze the incoming payload from the n8n workflow variable: {{ $json.input }}. \nPerform a structural research/analysis based on the input type, and provide a highly scannable, data-driven response.\n\n# RESEARCH METHODOLOGY\nWhen processing the input, follow this internal logic before generating the answer:\n1. Deconstruct: Identify the core problem, variables, or technical context in the input.\n2. Fact-Check & Cross-Reference: Look for technical constraints, market logic, or data patterns (depending on whether the topic is finance, technical infrastructure, or workflow automation).\n3. Synthesize: Filter out low-value information. Focus only on high-impact insights and actionable next steps.\n\n# OUTPUT FORMATTING RULES (CRITICAL)\nYour response must strictly adhere to these formatting guidelines to ensure quick readability:\n- No Fluff: Start directly with the answer or analysis. No \"Sure, I can help with that\" or \"Based on your input...\".\n- Use Structure: Break down the response using Markdown headings (##, ###) and Horizontal Rules (---) to separate distinct ideas.\n- Scannability: Use bullet points for lists and bolding (**text**) key phrases to guide the user's eye instantly to critical data.\n- Data Presentation: Use Markdown tables whenever comparing options, metrics, or displaying structured data.\n- Tone: Keep it objective, slightly witty but grounded, and professional. Treat the user as a technical peer who already understands the basics.\n\n# EXECUTION\nNow, process the following input and generate the structured response:\n{{ $json['Raw Text'] }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2976,
+        80
+      ],
+      "id": "48cbe2a6-cf2d-4ffe-8d2b-5affa66ff868",
+      "name": "Basic LLM Chain5",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "groq/compound",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3056,
+        304
+      ],
+      "id": "99698cf1-2326-4877-ab62-45a86c2522f4",
+      "name": "Groq Chat Model5",
+      "credentials": {
+        "groqApi": {
+          "id": "vXOuXKS68ekhetFa",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Mohon maaf atas ketidaknyamanannya.  \n\n🙏  Saat ini, kuota permintaan (request) untuk model AI telah mencapai batas maksimum harian. Sistem kami sedang melakukan penyegaran (reset) kuota secara berkala.  Silakan mencoba kembali dalam beberapa saat lagi atau besok hari. \n\nTerima kasih banyak atas pengertian dan kesabaran Anda. ✨\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        400
+      ],
+      "id": "3a4f3635-ac42-4d07-853d-be8e52624faf",
+      "name": "Respond Model Habis 2",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Mohon maaf atas ketidaknyamanannya.  \n\n🙏  Saat ini, kuota permintaan (request) untuk model AI telah mencapai batas maksimum harian. Sistem kami sedang melakukan penyegaran (reset) kuota secara berkala.  Silakan mencoba kembali dalam beberapa saat lagi atau besok hari. \n\nTerima kasih banyak atas pengertian dan kesabaran Anda. ✨\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1808,
+        -192
+      ],
+      "id": "089bf0d0-a8ba-4324-8022-9c51c1b2a450",
+      "name": "Respond Model Habis ",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Mohon maaf atas ketidaknyamanannya.  \n\n🙏  Saat ini, kuota permintaan (request) untuk model AI telah mencapai batas maksimum harian. Sistem kami sedang melakukan penyegaran (reset) kuota secara berkala.  Silakan mencoba kembali dalam beberapa saat lagi atau besok hari. \n\nTerima kasih banyak atas pengertian dan kesabaran Anda. ✨\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3328,
+        -512
+      ],
+      "id": "fe3349c4-069f-45a1-93c8-bb645395f5db",
+      "name": "Respond Model Habis 3",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Mohon maaf atas ketidaknyamanannya.  \n\n🙏  Saat ini, kuota permintaan (request) untuk model AI telah mencapai batas maksimum harian. Sistem kami sedang melakukan penyegaran (reset) kuota secara berkala.  Silakan mencoba kembali dalam beberapa saat lagi atau besok hari. \n\nTerima kasih banyak atas pengertian dan kesabaran Anda. ✨\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3328,
+        -112
+      ],
+      "id": "0cf5d332-5834-41c2-8ff9-de20f2c4708a",
+      "name": "Respond Model Habis 4",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Mohon maaf atas ketidaknyamanannya.  \n\n🙏  Saat ini, kuota permintaan (request) untuk model AI telah mencapai batas maksimum harian. Sistem kami sedang melakukan penyegaran (reset) kuota secara berkala.  Silakan mencoba kembali dalam beberapa saat lagi atau besok hari. \n\nTerima kasih banyak atas pengertian dan kesabaran Anda. ✨\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3328,
+        288
+      ],
+      "id": "8be28fb3-0ad1-4b04-9a03-3f562fd2c25b",
+      "name": "Respond Model Habis 5",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Mohon maaf atas ketidaknyamanannya.  \n\n🙏  Saat ini, kuota permintaan (request) untuk model AI telah mencapai batas maksimum harian. Sistem kami sedang melakukan penyegaran (reset) kuota secara berkala.  Silakan mencoba kembali dalam beberapa saat lagi atau besok hari. \n\nTerima kasih banyak atas pengertian dan kesabaran Anda. ✨\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3312,
+        1040
+      ],
+      "id": "e2f54621-fce2-44ab-b912-1216ed386605",
+      "name": "Respond Model Habis 6",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json['Predicted Intent'] }} sudah tercatat",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3872,
+        -608
+      ],
+      "id": "82c365c6-ffd7-47ae-920b-71f1895c7d9e",
+      "name": "Respond Berhasil Mencatat",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Baik, \" {{ $('Parse & Standardize Schedule').item.json.title }} \" Sudah Terjadwal",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4224,
+        -368
+      ],
+      "id": "5c12d7d8-43f1-4046-992c-081b1605cac5",
+      "name": "Respond Berhasil Menjadwal",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Maaf, \"{{ $('Parse & Standardize Schedule').item.json.title }}\" Gagal Terjadwal",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4000,
+        -160
+      ],
+      "id": "f86b9f31-eb41-415b-bd5c-e0ae3a7581cd",
+      "name": "Respond Tidak Berhasil Menjadwal",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.telegram_text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3552,
+        80
+      ],
+      "id": "3f94c9a0-2d9a-4358-9122-5e703d3e1fef",
+      "name": "Respond Berhasil Melakukan Riset",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=\"  {{ $('Telegram Trigger').item.json.message.text }} \" Sudah dicatat, sisa saldo kamu adalah Rp {{ $('Code in JavaScript6').item.json.sisa_saldo }} .",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4672,
+        368
+      ],
+      "id": "cc4e6e97-3123-401d-949c-a3d95cc9b15d",
+      "name": "Respond Berhasil Mencatat Keuangan 1",
+      "webhookId": "6208da6d-25c4-4110-b901-90a0ae8d5571",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=\"  {{ $('Telegram Trigger').item.json.message.text }} \" Sudah dicatat, sisa saldo kamu adalah Rp {{ $('Code in JavaScript6').item.json.sisa_saldo }} . Coba perhatikan kembali cash flow!!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4672,
+        560
+      ],
+      "id": "239e007c-7805-4b22-b2d3-b6df809bbe8b",
+      "name": "Respond Berhasil Mencatat Keuangan 2",
+      "webhookId": "6208da6d-25c4-4110-b901-90a0ae8d5571",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Sisa saldo kamu adalah Rp  {{ $json.sisa_saldo }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4432,
+        656
+      ],
+      "id": "d83b901b-150c-45a4-a203-eb81684d67a2",
+      "name": "Respond Berhasil Cek Saldo Keuangan 1",
+      "webhookId": "6208da6d-25c4-4110-b901-90a0ae8d5571",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Brooo...  sisa saldo kamu adalah Rp {{ $json.sisa_saldo }} . Coba perhatikan kembali cash flow!!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4432,
+        832
+      ],
+      "id": "9df96ad1-c4b1-4860-bf1d-2ad7c1a4e769",
+      "name": "Respond Berhasil Cek Saldo Keuangan 2",
+      "webhookId": "6208da6d-25c4-4110-b901-90a0ae8d5571",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "file": "={{ $json.pdf_url }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4432,
+        1024
+      ],
+      "id": "0a867bcf-03e1-42dd-95e2-aa7924589542",
+      "name": "Respond Berhasil Cetak Keuangan Keuangan",
+      "webhookId": "393747ba-c66e-46cf-ba4c-b8fc3d727af3",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Baik, \"{{ $json['Raw Text'] }}\" Berhasil dimasukan Google Task",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3760,
+        1216
+      ],
+      "id": "d2049879-740b-4ce6-b951-06a31a66fbea",
+      "name": "Respond Berhasil Catat To do",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Maaf, \"{{ $json['Raw Text'] }}\" Gagal dimasukan Google Task",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3760,
+        1408
+      ],
+      "id": "ce608d78-4cb6-44a4-9995-edff5267ed3f",
+      "name": "Respond Gagal Catat To do",
+      "webhookId": "521481d0-57ed-4068-b9f8-11a912704be6",
+      "credentials": {
+        "telegramApi": {
+          "id": "me4yOAYvQdnxLr7O",
+          "name": "Rico Assistant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 243781366,
+          "mode": "list",
+          "cachedResultName": "Tanggal",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=243781366"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tanggal Input": "={{ $json.created }}",
+            "Nama Acara": "={{ $json.summary }}",
+            "Status Sync": "={{ $json.status }}",
+            "Waktu Mulai": "={{ $json.start.dateTime }}",
+            "Waktu Selesai": "={{ $json.end.dateTime }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tanggal Input",
+              "displayName": "Tanggal Input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama Acara",
+              "displayName": "Nama Acara",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Waktu Mulai",
+              "displayName": "Waktu Mulai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Waktu Selesai",
+              "displayName": "Waktu Selesai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status Sync",
+              "displayName": "Status Sync",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3776,
+        -368
+      ],
+      "id": "67ba6923-c284-421c-b3d7-6e2237659b7f",
+      "name": "Tulis Jadwal di Spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 124642291,
+          "mode": "list",
+          "cachedResultName": "Keuangan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=124642291"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tanggal": "={{ $json.Tanggal }}",
+            "Bulan-Tahun": "={{ $json['Bulan-Tahun'] }}",
+            "Kategori": "={{ $json.Kategori }}",
+            "Catatan/Keterangan": "={{ $json.Catatan }}",
+            "Nominal": "={{ $json.Nominal }}",
+            "Jenis (Pemasukan/Pengeluaran)": "={{ $json.Jenis }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jenis (Pemasukan/Pengeluaran)",
+              "displayName": "Jenis (Pemasukan/Pengeluaran)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nominal",
+              "displayName": "Nominal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catatan/Keterangan",
+              "displayName": "Catatan/Keterangan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bulan-Tahun",
+              "displayName": "Bulan-Tahun",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3776,
+        464
+      ],
+      "id": "8ffb2852-2fc8-4d73-b589-e19592d86175",
+      "name": "Tulis Keuangan di Spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status (Success/Failed)": "={{ $('Code in JavaScript6').item.json.Process }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4896,
+        464
+      ],
+      "id": "97478264-cc86-447d-a60a-d92a60b7bc01",
+      "name": "Catat Log Keuangan",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status (Success/Failed)": "={{ $('Code in JavaScript7').item.json.Process }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4656,
+        736
+      ],
+      "id": "bb9db181-10d0-49f9-937d-9024354a647a",
+      "name": "Catat Log Keuangan 2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status (Success/Failed)": "={{ $('Code in JavaScript8').item.json.process }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4656,
+        1024
+      ],
+      "id": "02f203ec-fc52-4fd5-9e65-04df951df86d",
+      "name": "Catat Log Keuangan 3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Raw Text": "={{ $json.title }}",
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}",
+            "Status (Success/Failed)": "\"Finish\"",
+            "Timestamp": "={{ $json.updated }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3536,
+        1216
+      ],
+      "id": "387909a9-4ac1-42ad-8c43-7095a307cbba",
+      "name": "Catat Log Berhasil buat ToDo",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Status (Success/Failed)": "Failed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3536,
+        1408
+      ],
+      "id": "54744a6d-2841-408b-869f-a1d6e0269819",
+      "name": "Catat Log Gagal buat ToDo",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Status (Success/Failed)": "Failed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3504,
+        1040
+      ],
+      "id": "972c2f9b-07b5-4ec7-98a2-4f6496e5982b",
+      "name": "Catat Gagal mencatat Keuangan",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Status (Success/Failed)": "Finish"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3760,
+        80
+      ],
+      "id": "6ac129a6-a9f8-4fb8-89a2-b96eceea2e1d",
+      "name": "Log Berhasil mencatat Riset",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Status (Success/Failed)": "Failed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3520,
+        288
+      ],
+      "id": "14400786-10c1-42b0-8886-d4a14ba8eddd",
+      "name": "Log Gagal mencatat Riset",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Status (Success/Failed)": "Failed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3504,
+        -112
+      ],
+      "id": "c1e230c8-40df-4dc3-9cca-b8eec240188f",
+      "name": "Log Gagal mencatat Jadwal",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Predicted Intent": "={{ $('Logging Awal').item.json['Predicted Intent'] }}",
+            "Raw Text": "={{ $('Logging Awal').item.json['Raw Text'] }}",
+            "Timestamp": "={{ $('Logging Awal').item.json.Timestamp }}",
+            "Status (Success/Failed)": "Failed"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3504,
+        -512
+      ],
+      "id": "cd2d3c8b-f73a-4a45-8357-bef5a01593e6",
+      "name": "Log Gagal mencatat Catatan",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status (Success/Failed)": "={{ $('Parse & Standardize Schedule').item.json.process }}",
+            "Raw Text": "={{ $('Parse & Standardize Schedule').item.json.description }}",
+            "Timestamp": "={{ $json['Tanggal Input'] }}",
+            "Predicted Intent": "={{ $('Parse & Standardize Schedule').item.json.intent }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4000,
+        -368
+      ],
+      "id": "c140a23a-fa80-4e39-a252-e327861a1f1e",
+      "name": "Catat Log Jadwal 1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Ambil data mentah (pastikan nama field 'text' sesuai dengan input node Anda)\nconst rawInput = items[0].json.text;\n\n// Logika Date Now murni disesuaikan ke Waktu Jakarta (WIB / UTC+7)\nconst sekarang = new Date();\nconst wibOffset = 7 * 60 * 60 * 1000; // Selisih waktu WIB (7 jam)\n// Netralkan timezone server ke UTC, lalu tambahkan offset WIB\nconst waktuWIB = new Date(sekarang.getTime() + (sekarang.getTimezoneOffset() * 60000) + wibOffset);\nconst tanggalJakartaISO = waktuWIB.toISOString(); // Menghasilkan format seperti: 2026-06-21T14:45:13.000Z\n\ntry {\n  // 2. Parse string menjadi objek JSON\n  const data = typeof rawInput === 'string' ? JSON.parse(rawInput) : rawInput;\n\n  // 3. Kembalikan data yang sudah bersih dengan tambahan field 'process'\n  return [{\n    json: {\n      judul: data.judul || \"Tanpa Judul\",\n      kategori: data.kategori || \"Lainnya\",\n      rangkuman: data.rangkuman || \"\",\n      tanggal: tanggalJakartaISO, // <-- Menggunakan murni Waktu Jakarta saat ini\n      intent: data[\" Predicted Intent\"] || \"CATATAN\", \n      raw_text: data[\"Raw text\"] || \"\",\n      process: \"Finish\" \n    }\n  }];\n} catch (e) {\n  // Logika fallback jika JSON rusak\n  return [{\n    json: {\n      judul: \"Error Parsing\",\n      kategori: \"Error\",\n      rangkuman: rawInput,\n      tanggal: tanggalJakartaISO, // <-- Menggunakan murni Waktu Jakarta saat ini saat error\n      intent: \"ERROR\",\n      raw_text: \"Gagal memproses JSON\",\n      process: \"Failed\"\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        -736
+      ],
+      "id": "302fd4dd-220e-49c8-a8b8-506b1aa0bdfa",
+      "name": "Format Text to Clean JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  let rawText = item.json.text || \"\";\n  \n  try {\n    // Bersihkan karakter newline atau spasi aneh jika ada\n    const cleanText = rawText.trim();\n    const data = JSON.parse(cleanText);\n    \n    // Validasi & fallback jika jam_mulai atau jam_selesai bernilai null\n    const jamMulaiClean = data.jam_mulai || \"00:00\"; \n    const tanggalAcara = data.tanggal_acara || \"1970-01-01\";\n    \n    // 1. Buat format Start Time standar ISO (YYYY-MM-DDTHH:mm:ss)\n    const startDateTime = `${tanggalAcara}T${jamMulaiClean}:00`;\n    \n    // 2. Buat logika End Time dan simpan jam selesai bersih\n    let endDateTime;\n    let jamSelesaiClean;\n    \n    if (data.jam_selesai) {\n      endDateTime = `${tanggalAcara}T${data.jam_selesai}:00`;\n      jamSelesaiClean = data.jam_selesai;\n    } else {\n      // Jika jam_selesai null, tambahkan 1 jam dari jamMulaiClean\n      const [hours, minutes] = jamMulaiClean.split(':').map(Number);\n      let endHours = hours + 1;\n      \n      // Antisipasi jika penambahan 1 jam melewati tengah malam (24:00 -> 00:00)\n      if (endHours >= 24) {\n        endHours = endHours % 24;\n      }\n      \n      const endHoursStr = String(endHours).padStart(2, '0');\n      const endMinutesStr = String(minutes).padStart(2, '0');\n      \n      endDateTime = `${tanggalAcara}T${endHoursStr}:${endMinutesStr}:00`;\n      jamSelesaiClean = `${endHoursStr}:${endMinutesStr}`;\n    }\n\n    // 3. Dapatkan Tanggal Sekarang (Format YYYY-MM-DD di zona waktu WIB)\n    const sekarang = new Date();\n    const wibOffset = 7 * 60 * 60 * 1000;\n    const waktuWIB = new Date(sekarang.getTime() + (sekarang.getTimezoneOffset() * 60000) + wibOffset);\n    const tanggalSekarang = waktuWIB.toISOString().split('T')[0];\n\n    // 4. Keluarkan output yang sudah bersih siap pakai\n    item.json = {\n      title: data.nama_acara || \"Acara Tanpa Nama\",\n      tanggal_acara: String(tanggalAcara),\n      start_time: startDateTime,\n      end_time: endDateTime,\n      jam_mulai: jamMulaiClean,\n      jam_selesai: jamSelesaiClean,\n      tanggal_sekarang: tanggalSekarang,\n      description: data[\" Raw Text\"] || data[\"Raw Text\"] || \"\",\n      process: \"Finish\",\n      intent: data.predicted_intent || \"JADWAL\"\n    };\n  } catch (error) {\n    item.json = {\n      error: \"Gagal melakukan parse JSON\",\n      error_detail: error.message, // Menampilkan detail error asli untuk mempermudah debug\n      raw_text: rawText,\n      process: \"Failed\"\n    };\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        -320
+      ],
+      "id": "c9533c8a-894e-4424-b89c-b3ceed45a548",
+      "name": "Parse & Standardize Schedule"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  let rawText = item.json.text || item.json.output || \"\";\n\n  // 1. Ubah \\n literal menjadi enter nyata\n  rawText = rawText.replace(/\\\\n/g, '\\n');\n\n  let lines = rawText.split('\\n');\n  let formattedLines = [];\n  let isInsideTable = false;\n  let tableHeaders = [];\n\n  for (let line of lines) {\n    let trimmed = line.trim();\n\n    // Abaikan baris pembatas tabel Markdown (---|---|---)\n    if (trimmed.includes('---|') || trimmed.includes('---')) {\n      if (trimmed.startsWith('|') && trimmed.endsWith('|')) continue;\n    }\n\n    // PROSES JIKA BARIS ADALAH TABEL\n    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {\n      let cells = trimmed.split('|').map(c => c.trim()).filter(c => c !== '');\n\n      if (!isInsideTable) {\n        // Baris Header Tabel\n        tableHeaders = cells.map(c => c.replace(/\\*\\*/g, ''));\n        isInsideTable = true;\n        formattedLines.push('\\n📊 *DETAIL DATA*\\n───────────────────');\n      } else {\n        // Baris Isi Tabel\n        let rowBox = [];\n        cells.forEach((cell, index) => {\n          let headerName = tableHeaders[index] || `Kolom ${index + 1}`;\n          let cleanCell = cell.replace(/\\*\\*/g, ''); // Fix: Karakter '转' sudah dihapus\n          rowBox.push(`🔹 *${headerName}:* ${cleanCell}`);\n        });\n        formattedLines.push(rowBox.join('\\n') + '\\n───────────────────');\n      }\n    } else {\n      // PROSES JIKA BARIS BUKAN TABEL\n      if (isInsideTable) isInsideTable = false;\n\n      if (trimmed.startsWith('##')) {\n        // Judul/Sub-bab: Menggunakan format *TEKS TEBAL KAPITAL*\n        let headingText = trimmed.replace(/^##+\\s+/, '').toUpperCase();\n        formattedLines.push(`\\n📌 *${headingText}*\\n━━━━━━━━━━━━━━━━━━━`);\n      } else if (trimmed !== '') {\n        // Teks biasa: Standarisasi format **bold** LLM menjadi *bold* Telegram\n        let formattedLine = trimmed.replace(/\\*\\*(.*?)\\*\\*/g, '*$1*');\n        formattedLines.push(formattedLine);\n      } else {\n        // Pertahankan baris kosong untuk spasi antar paragraf\n        formattedLines.push('');\n      }\n    }\n  }\n\n  // Gabungkan semua menjadi satu string teks bersih\n  item.json.telegram_text = formattedLines.join('\\n').trim();\n  \n  // Menyimpan status ke dalam JSON secara aman\n  item.json.process_status = \"Finish\"; \n}\n\n// Return array item n8n yang valid\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        80
+      ],
+      "id": "02504427-640e-4f34-86fa-6a4b6ca118d9",
+      "name": "Markdown to Telegram Converter"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Ambil teks mentah dari Groq (berdasarkan image_815b1d.png)\nconst rawText = items[0].json.text;\n\n// 2. Ubah teks mentah string menjadi JSON Objek\nconst input = JSON.parse(rawText);\n\n// 3. Menentukan waktu otomatis\nconst now = new Date();\nconst tanggal = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD\nconst bulanTahun = `${now.getMonth() + 1}-${now.getFullYear()}`; // Format: 6-2026\n\n// 4. Mengembalikan format data lengkap + membawa ACTION untuk node Switch\nreturn {\n  json: {\n    action: input.action || \"RECORD\", // << INI YANG TADI HILANG, SEKARANG SUDAH AMAN\n    Tanggal: tanggal,\n    Jenis: input.jenis || \"Pengeluaran\",\n    Nominal: Number(input.nominal) || 0,\n    Kategori: input.kategori || \"LAIN-LAIN\",\n    Catatan: input.catatan || \"\",\n    \"Bulan-Tahun\": bulanTahun\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        736
+      ],
+      "id": "dd6de74b-f498-4a86-9bc6-a1d83b4d4810",
+      "name": "Format Transaction & Route"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Memproses semua item yang masuk dengan skema yang seragam\nreturn $input.all().map(item => {\n    const json = item.json;\n    \n    // 1. Ambil waktu lokal saat ini\n    const now = new Date();\n    \n    // 2. Geser waktu ke WIB (UTC + 7 jam)\n    const wibOffset = 7 * 60 * 60 * 1000; // 7 jam dalam milidetik\n    const wibTime = new Date(now.getTime() + wibOffset);\n    \n    // 3. Ubah ke format ISO dan ganti akhiran 'Z' dengan '+07:00' sebagai penanda WIB\n    const formattedDate = wibTime.toISOString().replace('Z', '+07:00');\n\n    return {\n        json: {\n            intent: json.final_Intent, \n            text: json.final_raw_text || \"Data tidak ditemukan\",\n            date: formattedDate,\n            proses: \"Start\"\n        }\n    };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        192
+      ],
+      "id": "d40bbd19-1c67-49da-80fc-ae6b0168a37c",
+      "name": "Initialize Workflow Payload"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil item pertama dari input\nconst firstItem = $input.all()[0];\n\n// Gunakan nama field yang berbeda (misal: 'text_js' atau 'balasan') \n// agar tidak menimpa field 'text' dari Input 1\nreturn [{\n  json: {\n    text_js: firstItem.json.message.text,\n    date : firstItem.json.message.date\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        640
+      ],
+      "id": "15641581-7860-4335-b7e2-5d8e358a460b",
+      "name": "Extract Telegram Message"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Ambil teks hasil transkripsi\nconst transcriptionNode = $(\"Get a transcription\").first();\n\n// 2. Ambil waktu sekarang langsung dari sistem (Format Unix Timestamp / detik)\nconst dateNowUnix = Math.floor(Date.now() / 1000);\n\n\n\nreturn [{\n  json: {\n    text_js: transcriptionNode.json.text,\n    date: dateNowUnix // Langsung terisi otomatis dengan waktu eksekusi program\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        48
+      ],
+      "id": "e05d5fab-e6d2-48ea-928f-a20f68e18da9",
+      "name": "Grab Transcription & Unix Time"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Raw Text": "={{ $('Get a transcription').item.json.text }}",
+            "Predicted Intent": "Failed",
+            "Status (Success/Failed)": "Failed",
+            "Timestamp": "={{ $('Telegram Trigger').item.json.message.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2016,
+        -192
+      ],
+      "id": "60e4e318-df0d-41b4-9071-0a0ce9d0fa07",
+      "name": "Loging Failed",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8",
+          "mode": "list",
+          "cachedResultName": "Rico Assistant Data N8n Fix",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KtSYkp0N9cZPUqm2HYY3XgSvFXQEkQv4gLbqwuomoY8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Raw Text": "={{ $('Get a transcription').item.json.text }}",
+            "Predicted Intent": "Failed",
+            "Status (Success/Failed)": "Failed",
+            "Timestamp": "={{ $('Telegram Trigger').item.json.message.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Text",
+              "displayName": "Raw Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Predicted Intent",
+              "displayName": "Predicted Intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status (Success/Failed)",
+              "displayName": "Status (Success/Failed)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        752,
+        400
+      ],
+      "id": "9e688fa8-ce63-44b9-a89f-d5296bac2cbb",
+      "name": "Loging Failed1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sWpJwVk4DYj7KD5p",
+          "name": "Google Sheets account muh.ericoricardo@gmail.com"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Create a transcription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a transcription": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get a transcription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a transcription": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Grab Transcription & Unix Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Model Habis 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Model Habis ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logging Awal": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "Format Text to Clean JSON",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Model Habis 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge from Voice Note": {
+      "main": [
+        [
+          {
+            "node": "Initialize Workflow Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge from Message": {
+      "main": [
+        [
+          {
+            "node": "Initialize Workflow Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge from Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge from Message",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge from Voice Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge from Voice Note",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain3": {
+      "main": [
+        [
+          {
+            "node": "Parse & Standardize Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Model Habis 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Tulis Jadwal di Spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Catat Log Jadwal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Log Catatan": {
+      "main": [
+        [
+          {
+            "node": "Respond Berhasil Mencatat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Log Jadwal": {
+      "main": [
+        [
+          {
+            "node": "Respond Tidak Berhasil Menjadwal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a task": {
+      "main": [
+        [
+          {
+            "node": "Catat Log Berhasil buat ToDo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Catat Log Gagal buat ToDo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain4": {
+      "main": [
+        [
+          {
+            "node": "Format Transaction & Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Model Habis 6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Tulis Keuangan di Spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Respond Berhasil Mencatat Keuangan 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Berhasil Mencatat Keuangan 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Respond Berhasil Cek Saldo Keuangan 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Berhasil Cek Saldo Keuangan 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to PDF": {
+      "main": [
+        [
+          {
+            "node": "Respond Berhasil Cetak Keuangan Keuangan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain5": {
+      "main": [
+        [
+          {
+            "node": "Markdown to Telegram Converter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Model Habis 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Model Habis ": {
+      "main": [
+        [
+          {
+            "node": "Loging Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Model Habis 5": {
+      "main": [
+        [
+          {
+            "node": "Log Gagal mencatat Riset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Berhasil Mencatat Keuangan 1": {
+      "main": [
+        [
+          {
+            "node": "Catat Log Keuangan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Berhasil Mencatat Keuangan 2": {
+      "main": [
+        [
+          {
+            "node": "Catat Log Keuangan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Berhasil Cek Saldo Keuangan 1": {
+      "main": [
+        [
+          {
+            "node": "Catat Log Keuangan 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Berhasil Cek Saldo Keuangan 2": {
+      "main": [
+        [
+          {
+            "node": "Catat Log Keuangan 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Berhasil Cetak Keuangan Keuangan": {
+      "main": [
+        [
+          {
+            "node": "Catat Log Keuangan 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tulis Jadwal di Spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Catat Log Jadwal 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tulis Keuangan di Spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Log Berhasil buat ToDo": {
+      "main": [
+        [
+          {
+            "node": "Respond Berhasil Catat To do",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Log Gagal buat ToDo": {
+      "main": [
+        [
+          {
+            "node": "Respond Gagal Catat To do",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Model Habis 6": {
+      "main": [
+        [
+          {
+            "node": "Catat Gagal mencatat Keuangan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Berhasil Melakukan Riset": {
+      "main": [
+        [
+          {
+            "node": "Log Berhasil mencatat Riset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Model Habis 4": {
+      "main": [
+        [
+          {
+            "node": "Log Gagal mencatat Jadwal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Model Habis 3": {
+      "main": [
+        [
+          {
+            "node": "Log Gagal mencatat Catatan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Log Jadwal 1": {
+      "main": [
+        [
+          {
+            "node": "Respond Berhasil Menjadwal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Text to Clean JSON": {
+      "main": [
+        [
+          {
+            "node": "Catat Catatan",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Catat Log Catatan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Standardize Schedule": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown to Telegram Converter": {
+      "main": [
+        [
+          {
+            "node": "Respond Berhasil Melakukan Riset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Transaction & Route": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Workflow Payload": {
+      "main": [
+        [
+          {
+            "node": "Logging Awal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grab Transcription & Unix Time": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Model Habis 2": {
+      "main": [
+        [
+          {
+            "node": "Loging Failed1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "70166c6b-d4ed-4a0e-b30b-a02f3bbe72ce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3c8d6036256de79a828380f1587bbd425300834729ce195eb3e8dc2ead79af2e"
+  },
+  "nodeGroups": [],
+  "id": "oXlZha5IIqXmYqjC",
+  "tags": []
+}
